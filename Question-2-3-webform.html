@@ -28,7 +28,7 @@
         margin: 0;
       }
 
-      /* Visually hidden utility for screen-reader-only instructions */
+      /* Visually hidden utility for screen reader only instructions */
       .sr-only {
         position: absolute;
         height: 1px;
@@ -40,13 +40,13 @@
         white-space: nowrap;
       }
 
-      /* Clear focus styles for keyboard users */
+      /* Clear, visible focus for keyboard users */
       :focus-visible {
         outline: 3px solid #ffbf47;
         outline-offset: 2px;
       }
 
-      /* Make the error summary visually distinct */
+      /* Error summary styling */
       fieldset.errors {
         border: 2px solid #c00;
         padding: 8px 12px;
@@ -59,6 +59,14 @@
 
       fieldset.errors a {
         text-decoration: underline;
+      }
+
+      /* Make inline help text slightly muted for sighted users */
+      .help {
+        display: block;
+        font-size: 0.95rem;
+        color: #444;
+        margin-left: 120px;
       }
     </style>
   </head>
@@ -80,8 +88,8 @@
     <form method="get" action="" novalidate>
       <div class="control">
         <!-- Q2-1. Proper label association: add for/id.
-             Q2-2. Indicate required in text.
-             Add required + aria-describedby for inline instructions. -->
+             Q2-2. Indicate required in text & programmatically.
+             Q2-4. Add required + aria-describedby for inline instructions. -->
         <label for="name"
           >Full name <span class="required" aria-hidden="true">*</span>
           <span class="sr-only">(required)</span></label
@@ -93,6 +101,8 @@
           autocomplete="name"
           aria-describedby="name_help"
         />
+        <!-- Inline instruction visible and announced -->
+        <span id="name_help" class="help">Enter your first and last name.</span>
       </div>
       <div class="control">
         <label>Biography</label
