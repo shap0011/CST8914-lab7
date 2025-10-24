@@ -105,25 +105,40 @@
         <span id="name_help" class="help">Enter your first and last name.</span>
       </div>
       <div class="control">
-        <label>Biography</label
-        ><textarea id="biography" name="biography" type="text"></textarea>
-        <span>Include examples on your skills in JavaScript.</span>
-      </div>
-
-      <div>Gender</div>
-      <div class="control">
-        <input id="gender_male" name="gender" type="radio" value="male" /><label
-          >Male</label
+        <!-- Q2-1. Add for/id
+             Q2-4. Connect help via aria-describedby -->
+        <label for="biography">Biography</label
+        ><textarea
+          id="biography"
+          name="biography"
+          aria-describedby="bio-help"
+        ></textarea>
+        <span id="bio_help" class="help"
+          >Include examples on your skills in JavaScript.</span
         >
       </div>
-      <div class="control">
-        <input
-          id="gender_female"
-          name="gender"
-          type="radio"
-          value="female"
-        /><label>Female</label>
-      </div>
+
+      <!-- Q2-2. & Q2-3. Group radios in a field/legend and indicate required in text -->
+      <!-- Q2-1. Associate each radio with its label via for/id -->
+      <fieldset class="control" aria-describedby="gender_help">
+        <div>Gender</div>
+        <div class="control">
+          <input
+            id="gender_male"
+            name="gender"
+            type="radio"
+            value="male"
+          /><label>Male</label>
+        </div>
+        <div class="control">
+          <input
+            id="gender_female"
+            name="gender"
+            type="radio"
+            value="female"
+          /><label>Female</label>
+        </div>
+      </fieldset>
 
       <div class="control">
         <input
