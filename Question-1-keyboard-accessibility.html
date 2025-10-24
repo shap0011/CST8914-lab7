@@ -24,11 +24,16 @@ body {
 a{
   color: #006b3a;
 }
-main a{
-  outline: none;
-}
-h2 {
-  margin-top: 0;
+
+/* Q-1 1. Remove `outline: none` in CSS to get focus visible on links in main */
+/* h2 {margin-top: 0;}*/
+
+ /* Ensure a strong, visible focus indicator for keyboard users */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid #ffbf47; /* high visibility outline */
+  outline-offset: 2px;
 }
 
 article h3 {
@@ -206,7 +211,9 @@ article p {
       <nav class="menu">
         <a href="#">Home</a>
         <a href="#">Politics</a>
-        <a href="#" tabindex="-1">Business</a>
+        <!-- Q-1 2. Remove tabindex="-1 so links is reachable by keyboard" -->
+        <!-- <a href="#" tabindex="-1">Business</a> -->
+        <a href="#">Business</a>
         <a href="#">Entertainment</a>
         <a href="#">Sports</a>
         <a href="#" class="btn-search pull-right"><img src="https://raw.githubusercontent.com/udacity/ud891/2de2a0688c68809a3b453db3a24b1a59e8401459/lesson2-focus/02-dom-order/images/search.svg" alt="Search" />Search</a> 
@@ -218,6 +225,7 @@ article p {
     <div class="container">
       <h3>Like the Funion? Consider joining our newsletter!</h3>
       <input type="text">
+      <!--  -->
       <button type="button" onfocus="getFocus()">Sign up</button></div>
       
     </div>
