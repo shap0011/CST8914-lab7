@@ -126,29 +126,30 @@
           <span class="sr-only">(required)</span>
         </legend>
         <!-- Q2-4. Inline instruction for SRs and visual -->
+        <span id="gender_help" class="help">Choose one option.</span>
+
+        <input id="gender_male" name="gender" type="radio" value="male" />
+        <label for="gender_male">Male</label>
+
+        <input id="gender_female" name="gender" type="radio" value="female" />
+        <label for="gender_male">Female</label>
       </fieldset>
-      <div class="control">
-        <input id="gender_male" name="gender" type="radio" value="male" /><label
-          >Male</label
-        >
-      </div>
-      <div class="control">
-        <input
-          id="gender_female"
-          name="gender"
-          type="radio"
-          value="female"
-        /><label>Female</label>
-      </div>
 
       <div class="control">
+        <!-- Q2-1. Label connected to checkbox with for/id -->
         <input
           id="accept_agbs"
           name="accept_agbs"
           type="checkbox"
           value="1"
-        /><label>I accept the terms and conditions</label>
+          aria-describedby="terms-help"
+        />
+        <label for="accept_agbs">I accept the terms and conditions</label>
+        <span id="terms_help" class="help"
+          >You must accept before registering</span
+        >
       </div>
+
       <div class="control">
         <input name="validate" type="hidden" value="1" /><input
           type="submit"
