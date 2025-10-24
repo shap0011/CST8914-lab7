@@ -212,7 +212,6 @@ article p {
         <a href="#">Home</a>
         <a href="#">Politics</a>
         <!-- Q-1 2. Remove tabindex="-1" so links is reachable by keyboard -->
-        <!-- <a href="#" tabindex="-1">Business</a> -->
         <a href="#">Business</a>
         <a href="#">Entertainment</a>
         <a href="#">Sports</a>
@@ -246,7 +245,8 @@ article p {
     <div class="side-by-side">
       <div class="column">
         <div class="tier-header">
-          <h2 tabindex="0">In the news</h2>
+          <!-- Q-1 4. Remove tabindex="0" from non-interactive heading -->
+          <h2>In the news</h2>
         </div>
         <article>
           <h3 class="headline">Bee wonders if maybe everyone else is a drone and he's the only one who has it "figured out."</h3>
