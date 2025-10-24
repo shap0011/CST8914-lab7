@@ -64,21 +64,35 @@
   </head>
   <body>
     <h1>Feedback form</h1>
-    <form>
+
+    <!-- Q2-3. Identifying required fields in text -->
+    <p>
+      <strong
+        >All fields marked with
+        <span class="required" aria-hidden="true">*</span> are required.</strong
+      >
+      <span class="sr-only"
+        >Required fields are indicated by the word "required".</span
+      >
+    </p>
+
+    <!-- Added method/action for clarity; novalidate so our custom JS demo runs consistently -->
+    <form method="get" action="" novalidate>
       <div class="control">
-        <!-- Q2-3. Identifying required fields in text -->
-        <p>
-          <strong
-            >All fields marked with
-            <span class="required" aria-hidden="true">*</span> are
-            required.</strong
-          >
-          <span class="sr-only"
-            >Required fields are indicated by the word "required".</span
-          >
-        </p>
-        <label>Full name <span class="required">*</span></label
-        ><input id="name" name="name" type="text" />
+        <!-- Q2-1. Proper label association: add for/id.
+             Q2-2. Indicate required in text.
+             Add required + aria-describedby for inline instructions. -->
+        <label for="name"
+          >Full name <span class="required" aria-hidden="true">*</span>
+          <span class="sr-only">(required)</span></label
+        ><input
+          id="name"
+          name="name"
+          type="text"
+          required
+          autocomplete="name"
+          aria-describedby="name_help"
+        />
       </div>
       <div class="control">
         <label>Biography</label
