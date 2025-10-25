@@ -50,6 +50,7 @@
       fieldset.errors {
         border: 2px solid #c00;
         padding: 8px 12px;
+        margin-bottom: 12px;
       }
 
       fieldset.errors legend {
@@ -68,8 +69,18 @@
         color: #444;
         margin-left: 120px;
       }
+
+      /* Success message (polite live region) */
+      #status {
+        background-color: #e6ffed;
+        color: #006b3a;
+        border: 1px solid #8fd19e;
+        padding: 8px 12px;
+        font-weight: 600;
+      }
     </style>
   </head>
+
   <body>
     <h1>Feedback form</h1>
 
@@ -83,6 +94,8 @@
         >Required fields are indicated by the word "required".</span
       >
     </p>
+
+    <div id="status" role="status" aria-live="polite"></div>
 
     <!-- Added method/action for clarity; novalidate so our custom JS demo runs consistently -->
     <form method="get" action="" novalidate>
@@ -107,7 +120,9 @@
       <div class="control">
         <!-- Q2-1. Add for/id
              Q2-4. Connect help via aria-describedby -->
-        <label for="biography">Biography</label
+        <label for="biography"
+          >Biography <span class="required" aria-hidden="true">*</span>
+          <span class="sr-only">(required)</span></label
         ><textarea
           id="biography"
           name="biography"
@@ -132,7 +147,7 @@
         <label for="gender_male">Male</label>
 
         <input id="gender_female" name="gender" type="radio" value="female" />
-        <label for="gender_male">Female</label>
+        <label for="gender_female">Female</label>
       </fieldset>
 
       <div class="control">
@@ -151,6 +166,7 @@
       </div>
 
       <div class="control">
+        <!-- Keep the original validate=1 mechanism so the URL-param demo works -->
         <input name="validate" type="hidden" value="1" />
         <input id="submitBtn" type="submit" value="Register" />
       </div>
@@ -161,25 +177,38 @@
       integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
       crossorigin="anonymous"
     ></script>
+
     <script>
       "use strict";
 
       (function () {
         var validateInput;
 
+        // Helper to read URL param for this demo validation
+
+        // $.urlParam = function (name) {
+        //   var results;
+        //   results = new RegExp("[?&]" + name + "=([^&#]*)").exec(
+        //     window.location.href
+        //   );
+
+        //   if (results === null) {
+        //     return null;
+        //   } else {
+        //     return decodeURI(results[1]) || null;
+        //   }
+
         $.urlParam = function (name) {
-          var results;
-          results = new RegExp("[?&]" + name + "=([^&#]*)").exec(
+          var results = new RegExp("[?&]" + name + "=([^&#]*)").exec(
             window.location.href
           );
-
-          if (results === null) {
-            return null;
-          } else {
-            return decodeURI(results[1]) || null;
-          }
+          if (results === null) return null;
+          return decodeURI(results[1]) || null;
         };
+        // };
 
+        // Q3-2 & Q3-3: build an accessible error summary, link each message to its control,
+        // ensure focus moves to the summary. Also ensure aria-describedby exist.
         validateInput = function validateInput(input, message) {
           var $elementToDescribe,
             $error,
@@ -191,9 +220,13 @@
           $input = $('[name="' + input + '"]');
 
           if ((value = $.urlParam(input)) === null) {
+            // Create (once) a tabbable, live error summary at the top
             if ($("fieldset.errors").length === 0) {
               $("form").prepend(
-                '<fieldset class="errors"><legend>Errors</legend><ul></ul></fieldset>'
+                // Q3-2: role="alert" + aria-live assertively announces errors;
+                // Q3-3: tabindex="-1" so we can programmatically focus the summary.
+                '<fieldset class="errors" role="alert" aria-live="assertive" tabindex="-1">' +
+                  '<legend id="error_legend">Errors</legend><ul></ul></fieldset>'
               );
             }
 
@@ -202,43 +235,90 @@
             $errorContainer = $("fieldset.errors ul");
 
             if ($input.is(":radio")) {
+              // For radio groups, describe the whole fieldset
               $fieldset = $input.closest("fieldset");
-              $elementToDescribe = $fieldset;
+              $elementToDescribe = $fieldset.length ? $fieldset : $input;
               $referencedElement = $input.filter(":first");
             } else {
               $elementToDescribe = $input;
               $referencedElement = $input;
             }
-            // R.G. hint: fix next line ;)
-            $error = $("<a>" + message + "</a>");
-            $error.click(function (e) {
-              // If we rely on the link's href pointing to the input's ID, it doesn't trigger forms mode in screen readers
-              $referencedElement.focus();
-              return e.preventDefault();
+
+            // Ensure the described-by element exists; create it if needed
+            var descId = input + "_description";
+            if ($("#" + descId).length === 0) {
+              // Create a hidden description span and connect it
+              var hiddenSpan = $(
+                '<span id="' + descId + '" class="sr-only"></span>'
+              );
+              // Insert it after the control (or for radios, after the first radio)
+              if ($input.is(":radio")) {
+                $referencedElement.after(hiddenSpan);
+              } else {
+                $elementToDescribe.after(hiddenSpan);
+              }
+            }
+            $elementToDescribe.attr("aria-describedby", function (i, val) {
+              // Preserve any existing help ids (like *_help) by appending the error id
+              return (val ? val + " " : "") + descId;
             });
-            $elementToDescribe.attr("aria-describedby", input + "_description");
+
+            // Q3-2: FIX the “hint” line - make the summary item an anchor pointing to the control
+            // If referenced element has no id, ensure it has one
+            if (!$referencedElement.attr("id")) {
+              $referencedElement.attr("id", input + "_field");
+            }
+            // R.G. hint: fix next line ;)
+            $error = $(
+              '<a href="#' +
+                $referencedElement.attr("id") +
+                '">' +
+                message +
+                "</a>"
+            );
+
+            // When clicking an error link, move focus to the referenced control
+            // $error.click(function (e) {
+            $error.on("click", function (e) {
+              // If we rely on the link's href pointing to the input's ID, it doesn't trigger forms mode in screen readers
+              // Moving focus triggers forms/browse modes correctly in SRs
+              $referencedElement.focus();
+              // return e.preventDefault();
+              e.preventDefault();
+            });
+
+            //$elementToDescribe.attr("aria-describedby", input + "_description");
             $errorContainer.append("<li>").find("li:last").append($error);
 
-            if ($(":not(form):focus").length === 0) {
-              // See https://stackoverflow.com/questions/46134247/jquery-setting-focus-doesnt-work-in-ie11/
-            }
+            //if ($(":not(form):focus").length === 0) {
+            // See https://stackoverflow.com/questions/46134247/jquery-setting-focus-doesnt-work-in-ie11/
+            //}
           } else {
+            // Populate fields from URL params to simulate successful entries
             if ($input.is(":checkbox")) {
-              $input.attr("checked", true);
+              //$input.attr("checked", true);
+              $input.prop("checked", true);
             }
 
             if ($input.is(":radio")) {
-              return $input
-                .filter('[value="' + value + '"]')
-                .attr("checked", true);
+              //return $input
+              //  .filter('[value="' + value + '"]')
+              //  .attr("checked", true);
+              $input.filter('[value="' + value + '"]').prop("checked", true);
             } else {
-              return $input.val(value);
+              // return $input.val(value);
+              $input.val(value);
             }
           }
         };
 
+        // When the page loads after pressing Register (method=get), run the validation
         $(document).ready(function () {
           if ($.urlParam("validate")) {
+            // Clear previous status message
+            $("#status").empty();
+
+            //Q2-1..Q2-4 messages that also appear in the error summary
             validateInput("name", "Please enter your name!");
             validateInput(
               "biography",
@@ -250,12 +330,28 @@
               "You must accept our terms and conditions!"
             );
 
-            if ($(".error").length === 0) {
-              return alert("All inputs are valid.");
+            var hasErrors = $("fieldset.errors li").length > 0;
+
+            if (hasErrors) {
+              // Q3-3: Move focus to the error summary for keyboard and SR users
+              var $summary = $("fieldset.errors");
+              // Add error count to legend for clarity
+              var count = $("fieldset.errors li").length;
+              $("#error_legend").text("Errors (" + count + ")");
+              $summary.focus();
+            } else {
+              // Q3-1: Only announce success when there are no errors
+              // Show both the on-screen message and pop-up alert
+              $("#status").text("All inputs are valid.");
+              alert("All inputs are valid.");
             }
+
+            //if ($(".error").length === 0) {
+            //  return alert("All inputs are valid.");
+            // }
           }
         });
-      }).call(void 0);
+      })();
     </script>
   </body>
 </html>
