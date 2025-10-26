@@ -190,18 +190,22 @@
         var validateInput;
 
         // Helper to read URL param for this demo validation
-
+        // Define a helper $.urlParam(name) that reads query-string parameters from the page URL
         $.urlParam = function (name) {
           var results = new RegExp("[?&]" + name + "=([^&#]*)").exec(
             window.location.href
           );
           if (results === null) return null;
+          // Replace '+' with ' ' when retrieve name in text box
           return decodeURIComponent(results[1].replace(/\+/g, " ")) || null;
         };
         // };
 
         // Q3-2 & Q3-3: build an accessible error summary, link each message to its control,
-        // ensure focus moves to the summary. Also ensure aria-describedby exist.
+        // Ensure focus moves to the summary. Also ensure aria-describedby exist.
+        // Define validateInput(input, message) which:
+        //  - if the parameter is missing -> creates/updates an error summary and links the error to the field;
+        //  - if the parameter is present -> fills the field from the URL (so the form "remembers" entries)
         validateInput = function validateInput(input, message) {
           var $elementToDescribe,
             $error,
@@ -210,10 +214,12 @@
             $input,
             $referencedElement,
             value;
-          $input = $('[name="' + input + '"]');
+          $input = $('[name="' + input + '"]'); // jQuery select by name
 
           if ((value = $.urlParam(input)) === null) {
+            // MISSING value -> error mode
             // Create (once) a tabbable, live error summary at the top
+            // Ensure an error summary exists at the top
             if ($("fieldset.errors").length === 0) {
               $("form").prepend(
                 // Q3-2: role="alert" + aria-live assertively announces errors;
@@ -223,18 +229,18 @@
               );
             }
 
-            $referencedElement = null;
-            $elementToDescribe = null;
+            // Find the <ul> inside the error summary fieldset
             $errorContainer = $("fieldset.errors ul");
 
+            // Pick the element to describe + the element to focus
             if ($input.is(":radio")) {
               // For radio groups, describe the whole fieldset
               $fieldset = $input.closest("fieldset");
               $elementToDescribe = $fieldset.length ? $fieldset : $input;
-              $referencedElement = $input.filter(":first");
+              $referencedElement = $input.filter(":first"); // first radio will get focus
             } else {
-              $elementToDescribe = $input;
-              $referencedElement = $input;
+              $elementToDescribe = $input; // describe this control
+              $referencedElement = $input; // and focus it from the summary link
             }
 
             // Ensure the described-by element exists; create it if needed
@@ -251,6 +257,7 @@
                 $elementToDescribe.after(hiddenSpan);
               }
             }
+
             $elementToDescribe.attr("aria-describedby", function (i, val) {
               // Preserve any existing help ids (like *_help) by appending the error id
               return (val ? val + " " : "") + descId;
@@ -271,12 +278,10 @@
             );
 
             // When clicking an error link, move focus to the referenced control
-            // $error.click(function (e) {
             $error.on("click", function (e) {
               // If we rely on the link's href pointing to the input's ID, it doesn't trigger forms mode in screen readers
               // Moving focus triggers forms/browse modes correctly in SRs
               $referencedElement.focus();
-              // return e.preventDefault();
               e.preventDefault();
             });
 
@@ -287,20 +292,20 @@
             // See https://stackoverflow.com/questions/46134247/jquery-setting-focus-doesnt-work-in-ie11/
             //}
           } else {
-            // Populate fields from URL params to simulate successful entries
+            // PRESENT value -> fill the field
+            // handle checkbox
             if ($input.is(":checkbox")) {
-              //$input.attr("checked", true);
-              $input.prop("checked", true);
+              $input.attr("checked", true);
             }
 
+            // handle radio buttons
             if ($input.is(":radio")) {
-              //return $input
-              //  .filter('[value="' + value + '"]')
-              //  .attr("checked", true);
-              $input.filter('[value="' + value + '"]').prop("checked", true);
+              return $input
+                .filter('[value="' + value + '"]')
+                .attr("checked", true);
             } else {
-              // return $input.val(value);
-              $input.val(value);
+              // handle all other input types
+              return $input.val(value);
             }
           }
         };
@@ -311,6 +316,9 @@
             // Clear previous status message
             $("#status").removeClass("visible").empty();
 
+            // On $(document).ready(...):
+            //  - check if ?validate=1 is in the URL,
+            //  - run validateInput(...) for each field,
             //Q2-1..Q2-4 messages that also appear in the error summary
             validateInput("name", "Please enter your name!");
             validateInput(
@@ -327,6 +335,7 @@
 
             if (hasErrors) {
               // Q3-3: Move focus to the error summary for keyboard and SR users
+              // if any errors exist -> move focus to summary
               var $summary = $("fieldset.errors");
               // Add error count to legend for clarity
               var count = $("fieldset.errors li").length;
@@ -342,10 +351,6 @@
               $("#status").addClass("visible").text("All inputs are valid.");
               alert("All inputs are valid.");
             }
-
-            //if ($(".error").length === 0) {
-            //  return alert("All inputs are valid.");
-            // }
           }
         });
       })();
