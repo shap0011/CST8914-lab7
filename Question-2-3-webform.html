@@ -72,11 +72,16 @@
 
       /* Success message (polite live region) */
       #status {
+        display: none; /* hidden until success */
         background-color: #e6ffed;
         color: #006b3a;
         border: 1px solid #8fd19e;
         padding: 8px 12px;
         font-weight: 600;
+      }
+
+      #status.visible {
+        display: block; /* shown when success */
       }
     </style>
   </head>
@@ -186,24 +191,12 @@
 
         // Helper to read URL param for this demo validation
 
-        // $.urlParam = function (name) {
-        //   var results;
-        //   results = new RegExp("[?&]" + name + "=([^&#]*)").exec(
-        //     window.location.href
-        //   );
-
-        //   if (results === null) {
-        //     return null;
-        //   } else {
-        //     return decodeURI(results[1]) || null;
-        //   }
-
         $.urlParam = function (name) {
           var results = new RegExp("[?&]" + name + "=([^&#]*)").exec(
             window.location.href
           );
           if (results === null) return null;
-          return decodeURI(results[1]) || null;
+          return decodeURIComponent(results[1].replace(/\+/g, " ")) || null;
         };
         // };
 
@@ -316,7 +309,7 @@
         $(document).ready(function () {
           if ($.urlParam("validate")) {
             // Clear previous status message
-            $("#status").empty();
+            $("#status").removeClass("visible").empty();
 
             //Q2-1..Q2-4 messages that also appear in the error summary
             validateInput("name", "Please enter your name!");
@@ -339,10 +332,14 @@
               var count = $("fieldset.errors li").length;
               $("#error_legend").text("Errors (" + count + ")");
               $summary.focus();
+
+              // Ensure success message stays hidden if there are errors
+              $("#status").removeClass("visible").empty();
             } else {
               // Q3-1: Only announce success when there are no errors
               // Show both the on-screen message and pop-up alert
-              $("#status").text("All inputs are valid.");
+              // Show visible success message only when all inputs are valid
+              $("#status").addClass("visible").text("All inputs are valid.");
               alert("All inputs are valid.");
             }
 
